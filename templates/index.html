@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список поручений</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f0f0f0; }
+        .overdue { color: red; font-weight: bold; }
+        .today { color: orange; font-weight: bold; }
+        .new { color: green; }
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            th { display: none; }
+            td { border: none; position: relative; padding-left: 50%; }
+            td:before {
+                position: absolute;
+                left: 10px;
+                top: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+            }
+            td:nth-of-type(1):before { content: "Название"; }
+            td:nth-of-type(2):before { content: "Ответственный"; }
+            td:nth-of-type(3):before { content: "Срок"; }
+            td:nth-of-type(4):before { content: "Статус"; }
+            td:nth-of-type(5):before { content: "Документ"; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Поручения</h1>
+
+    {% if role == 'руководитель' %}
+    <form method="POST" enctype="multipart/form-data">
+        <label>Название поручения:</label><br>
+        <input type="text" name="title" required><br><br>
+
+        <label>Ответственный (номер WhatsApp):</label><br>
+        <input type="text" name="responsible" required><br><br>
+
+        <label>Срок исполнения:</label><br>
+        <input type="date" name="due_date" required><br><br>
+
+        <label>Документ:</label><br>
+        <input type="file" name="document" required><br><br>
+
+        <button type="submit">Добавить поручение</button>
+    </form>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Ответственный</th>
+                <th>Срок</th>
+                <th>Статус</th>
+                <th>Документ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.title }}</td>
+                <td>{{ task.responsible }}</td>
+                <td>{{ task.due_date }}</td>
+                <td class="{% if task.status == 'Просрочено' %}overdue{% elif task.status == 'Срочно' %}today{% else %}new{% endif %}">
+                    {{ task.status }}
+                </td>
+                <td>
+                    {% if task.document %}
+                        <a href="/uploads/{{ task.document }}" target="_blank">Открыть</a>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
