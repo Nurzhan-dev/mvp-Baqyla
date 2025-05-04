@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,13 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список поручений</title>
     <style>
-        body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background-color: #f0f0f0; }
+        body {
+            font-family: Arial;
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            height: 50px;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            font-weight: bold;
+        }
+
+        .lang-switch button,
+        .home-button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
         .overdue { color: red; font-weight: bold; }
         .today { color: orange; font-weight: bold; }
         .new { color: green; }
+
         @media (max-width: 600px) {
             table, thead, tbody, th, td, tr { display: block; width: 100%; }
             th { display: none; }
@@ -33,34 +88,52 @@
     </style>
 </head>
 <body>
-    <h1>Поручения</h1>
+
+    <div class="top-bar">
+        <img src="/logo.png" alt="Логотип" class="logo">
+
+        <div class="user-controls">
+            <div class="user-info" id="userInfo">
+                Добро пожаловать, {{ name }} ({{ role }})
+            </div>
+
+            <a href="/" class="home-button">Домой</a>
+
+            <div class="lang-switch">
+                <button onclick="setLang('ru')">RU</button>
+                <button onclick="setLang('kz')">KZ</button>
+            </div>
+        </div>
+    </div>
+
+    <h1 id="tasksTitle">Поручения</h1>
 
     {% if role == 'руководитель' %}
     <form method="POST" enctype="multipart/form-data">
-        <label>Название поручения:</label><br>
+        <label id="labelTitle">Название поручения:</label><br>
         <input type="text" name="title" required><br><br>
 
-        <label>Ответственный (номер WhatsApp):</label><br>
+        <label id="labelResp">Ответственный (номер WhatsApp):</label><br>
         <input type="text" name="responsible" required><br><br>
 
-        <label>Срок исполнения:</label><br>
+        <label id="labelDate">Срок исполнения:</label><br>
         <input type="date" name="due_date" required><br><br>
 
-        <label>Документ:</label><br>
+        <label id="labelDoc">Документ:</label><br>
         <input type="file" name="document" required><br><br>
 
-        <button type="submit">Добавить поручение</button>
+        <button type="submit" id="addBtn">Добавить поручение</button>
     </form>
     {% endif %}
 
     <table>
         <thead>
             <tr>
-                <th>Название</th>
-                <th>Ответственный</th>
-                <th>Срок</th>
-                <th>Статус</th>
-                <th>Документ</th>
+                <th id="thTitle">Название</th>
+                <th id="thResp">Ответственный</th>
+                <th id="thDate">Срок</th>
+                <th id="thStatus">Статус</th>
+                <th id="thDoc">Документ</th>
             </tr>
         </thead>
         <tbody>
@@ -83,5 +156,67 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <script>
+        const translations = {
+            ru: {
+                welcome: "Добро пожаловать",
+                tasks: "Поручения",
+                titleLabel: "Название поручения:",
+                responsibleLabel: "Ответственный (номер WhatsApp):",
+                dateLabel: "Срок исполнения:",
+                docLabel: "Документ:",
+                addBtn: "Добавить поручение",
+                thTitle: "Название",
+                thResp: "Ответственный",
+                thDate: "Срок",
+                thStatus: "Статус",
+                thDoc: "Документ"
+            },
+            kz: {
+                welcome: "Қош келдіңіз",
+                tasks: "Тапсырмалар",
+                titleLabel: "Тапсырма атауы:",
+                responsibleLabel: "Жауапты (WhatsApp нөмірі):",
+                dateLabel: "Орындау мерзімі:",
+                docLabel: "Құжат:",
+                addBtn: "Тапсырма қосу",
+                thTitle: "Атауы",
+                thResp: "Жауапты",
+                thDate: "Мерзімі",
+                thStatus: "Мәртебесі",
+                thDoc: "Құжат"
+            }
+        };
+
+        function setLang(lang) {
+            localStorage.setItem("lang", lang);
+            applyLang(lang);
+        }
+
+        function applyLang(lang) {
+            const t = translations[lang];
+            document.getElementById("tasksTitle").innerText = t.tasks;
+            document.getElementById("labelTitle").innerText = t.titleLabel;
+            document.getElementById("labelResp").innerText = t.responsibleLabel;
+            document.getElementById("labelDate").innerText = t.dateLabel;
+            document.getElementById("labelDoc").innerText = t.docLabel;
+            document.getElementById("addBtn").innerText = t.addBtn;
+            document.getElementById("thTitle").innerText = t.thTitle;
+            document.getElementById("thResp").innerText = t.thResp;
+            document.getElementById("thDate").innerText = t.thDate;
+            document.getElementById("thStatus").innerText = t.thStatus;
+            document.getElementById("thDoc").innerText = t.thDoc;
+
+            const name = "{{ name }}";
+            const role = "{{ role }}";
+            document.getElementById("userInfo").innerText = `${t.welcome}, ${name} (${role})`;
+        }
+
+        window.onload = function () {
+            const lang = localStorage.getItem("lang") || "ru";
+            applyLang(lang);
+        };
+    </script>
 </body>
 </html>
