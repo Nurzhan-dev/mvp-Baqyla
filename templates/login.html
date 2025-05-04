@@ -1,20 +1,144 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <title>Baqyla — Вход</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f0f0f0;
+        }
+
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .lang-switch button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        img.logo {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background-color: white;
+            display: inline-block;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 350px;
+        }
+
+        input, select, button {
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Выберите роль:</h2>
+
+    <div class="lang-switch">
+        <button onclick="setLanguage('ru')">RU</button>
+        <button onclick="setLanguage('kz')">KZ</button>
+    </div>
+
+    <img src="/logo.png" alt="Baqyla logo" class="logo">
+
+    <h2 id="title">Вход</h2>
+
     <form method="POST">
-        <select name="role" required>
+        <input type="text" name="name" id="nameInput" placeholder="Имя" required>
+
+        <select name="role" id="roleSelect" required>
             <option value="руководитель">Руководитель</option>
             <option value="сотрудник">Сотрудник</option>
         </select>
-        <br><br>
-        <button type="submit">Войти</button>
+
+        <input type="password" name="password" id="passwordInput" placeholder="Пароль" required>
+
+        <button type="submit" id="submitBtn">Войти</button>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
     </form>
+
+    <script>
+        const translations = {
+            ru: {
+                title: "Вход",
+                name: "Имя",
+                password: "Пароль",
+                submit: "Войти",
+                roles: {
+                    руководитель: "Руководитель",
+                    сотрудник: "Сотрудник"
+                }
+            },
+            kz: {
+                title: "Кіру",
+                name: "Аты",
+                password: "Құпия сөз",
+                submit: "Кіру",
+                roles: {
+                    руководитель: "Басшы",
+                    сотрудник: "Қызметкер"
+                }
+            }
+        };
+
+        function setLanguage(lang) {
+            localStorage.setItem('lang', lang);
+            applyLanguage(lang);
+        }
+
+        function applyLanguage(lang) {
+            const t = translations[lang];
+
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('nameInput').placeholder = t.name;
+            document.getElementById('passwordInput').placeholder = t.password;
+            document.getElementById('submitBtn').innerText = t.submit;
+
+            const select = document.getElementById('roleSelect');
+            select.options[0].text = t.roles.руководитель;
+            select.options[1].text = t.roles.сотрудник;
+        }
+
+        // Apply language on page load
+        window.onload = function () {
+            const lang = localStorage.getItem('lang') || 'ru';
+            applyLanguage(lang);
+        };
+    </script>
+
 </body>
 </html>
