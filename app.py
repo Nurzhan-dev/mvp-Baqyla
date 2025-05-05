@@ -46,7 +46,7 @@ def dashboard():
     name = request.args.get("name", "Пользователь")
     return f"<h2>Добро пожаловать, {name}!</h2>"
 @app.route("/img")
-def img (src={{ url_for('templates', filename='Logo.png') }}" alt="Логотип" class='logo')
+def img(src={{ url_for('templates', 'filename'= Logo.png) }} alt='Логотип' class='logo')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
