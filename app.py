@@ -5,6 +5,28 @@ from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
+
+# Простейшие пароли по ролям
+CREDENTIALS = {
+    "руководитель": "admin123",
+    "сотрудник": "user123"
+}
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        name = request.form.get("name")
+        role = request.form.get("role")
+        password = request.form.get("password")
+
+        if CREDENTIALS.get(role) == password:
+            return redirect(url_for("dashboard", name=name))
+        else:
+            error = "Неверный пароль"
+
+    return render_template("login.html", error=error)
+
 app.secret_key = 'secret-key'
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -19,14 +41,19 @@ def login():
         session['role'] = role
         return redirect(url_for('index'))
     return render_template('login.html')
+@app.route("/dashboard")
+def dashboard():
+    name = request.args.get("name", "Пользователь")
+    return f"<h2>Добро пожаловать, {name}!</h2>"
+@app.route("/img")
+def img (src={{ url_for('templates', filename='logo.png') }}" alt="Логотип" class='logo')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if 'role' not in session:
         return redirect(url_for('login'))
 
-    role = session['role']
-
+    role = session['role']    
     if request.method == 'POST' and role == 'руководитель':
         file = request.files['document']
         filename = secure_filename(file.filename)
