@@ -1,16 +1,22 @@
-
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session
 from datetime import date
 from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
+app.secret_key = 'secret-key'
+
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Простейшие пароли по ролям
 CREDENTIALS = {
     "руководитель": "admin123",
     "сотрудник": "user123"
 }
+
+tasks = []
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -21,39 +27,37 @@ def login():
         password = request.form.get("password")
 
         if CREDENTIALS.get(role) == password:
-            return redirect(url_for("dashboard", name=name))
+            session['name'] = name
+            session['role'] = role
+            return redirect(url_for("index"))
         else:
             error = "Неверный пароль"
 
     return render_template("login.html", error=error)
 
-app.secret_key = 'secret-key'
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
-tasks = []
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        role = request.form['role']
-        session['role'] = role
-        return redirect(url_for('index'))
-    return render_template('login.html')
 @app.route("/dashboard")
 def dashboard():
-    name = request.args.get("name", "Пользователь")
+    name = session.get("name", "Пользователь")
     return f"<h2>Добро пожаловать, {name}!</h2>"
-@app.route("/img")
-def img(src={{ url_for('templates', 'filename'= Logo.png) }} alt='Логотип' class='logo')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/index', methods=['GET', 'POST'])
+@app.route('/tasks', methods=['GET', 'POST'])
 def index():
-    if 'role' not in session:
+    if 'role' not in session or 'name' not in session:
         return redirect(url_for('login'))
 
-    role = session['role']    
+    role = session['role']
+    name = session['name']
+
     if request.method == 'POST' and role == 'руководитель':
         file = request.files['document']
         filename = secure_filename(file.filename)
@@ -75,11 +79,8 @@ def index():
             'Срочно' if task['due_date'] == today else
             'Новое'
         )
-    return render_template('index.html', tasks=tasks, role=role)
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return render_template('index.html', tasks=tasks, role=role, name=name)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
